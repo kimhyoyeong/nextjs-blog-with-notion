@@ -1,9 +1,9 @@
-export default function Home() {
+export default function AboutSkills() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-8">
         {/* 섹션 제목 */}
-        <h2 className="text-3xl font-bold tracking-tight">블로그 리스트</h2>
+        <h2 className="text-3xl font-bold tracking-tight">Skills</h2>
       </div>
     </div>
   );
