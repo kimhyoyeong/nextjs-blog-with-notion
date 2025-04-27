@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -128,4 +129,8 @@
 .container {
   @apply mx-auto max-w-6xl py-8;
   width: 100%;
+}
+
+header {
+  height: var(--header-height);
 }

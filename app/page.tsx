@@ -1,3 +1,4 @@
+// 이 파일은 데이터를 서버에서 fetch해서 각 섹션에 뿌려주는 Server Component입니다.
 import {
   Select,
   SelectContent,
@@ -10,29 +11,25 @@ import TagSection from '@/app/_components/TagSection';
 import ProfileSection from '@/app/_components/ProfileSection';
 import ContactSection from '@/app/_components/ContactSection';
 import Link from 'next/link';
-import { getPublishedPosts } from '@/lib/notion';
+import { getPublishedPosts, getTags } from '@/lib/notion';
 
-const mockTags = [
-  { id: 'all', name: '전체', count: 20 },
-  { id: 'html', name: 'HTML', count: 10 },
-  { id: 'css', name: 'CSS', count: 5 },
-  { id: 'javascript', name: 'JavaScript', count: 3 },
-  { id: 'react', name: 'React', count: 3 },
-  { id: 'nextjs', name: 'Next.js', count: 3 },
-];
+// Home 컴포넌트는 서버에서 posts, tags 데이터를 가져와서 각 섹션에 전달합니다.
+export default async function Home({ searchParams }) {
+  // 쿼리에서 tag 값 읽음 (서버에서 처리)
+  const selectedTag = searchParams?.tag;
 
-export default async function Home() {
-  const posts = await getPublishedPosts();
+  // 서버에서 posts, tags 한 번에 받아옴 (posts는 태그로 필터링된 상태)
+  const [posts, tags] = await Promise.all([getPublishedPosts(selectedTag), getTags()]);
 
   return (
     <div className="container py-8">
       <div className="grid grid-cols-[200px_1fr_220px] gap-6">
-        {/* 좌측 사이드바 */}
+        {/* 좌측: 태그 필터 섹션 */}
         <aside>
-          <TagSection tags={mockTags} />
+          <TagSection tags={tags} selectedTag={selectedTag} />
         </aside>
+        {/* 중앙: 블로그 목록 및 정렬 */}
         <div className="space-y-8">
-          {/* 섹션 제목 */}
           <div className="flex items-center justify-between">
             <h2 className="text-3xl font-bold tracking-tight">블로그 목록</h2>
             <Select defaultValue="latest">
@@ -45,8 +42,7 @@ export default async function Home() {
               </SelectContent>
             </Select>
           </div>
-
-          {/* 블로그 카드 그리드 */}
+          {/* 게시글 카드 리스트 */}
           <div className="grid gap-4">
             {posts.map((post) => (
               <Link href={`/blog/${post.slug}`} key={post.id}>
@@ -55,7 +51,7 @@ export default async function Home() {
             ))}
           </div>
         </div>
-        {/* 우측 사이드바 */}
+        {/* 우측: 프로필 및 연락처 */}
         <aside className="flex flex-col gap-6">
           <ProfileSection />
           <ContactSection />
