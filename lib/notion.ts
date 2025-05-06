@@ -1,4 +1,3 @@
-//Notion API를 사용해서 데이터를 가져오고, 그 데이터를 가공해서 반환하는 작업
 import { Client } from '@notionhq/client';
 import type { Post, TagFilterItem } from '@/types/blog';
 import type {
@@ -10,7 +9,6 @@ import { NotionToMarkdown } from 'notion-to-md';
 export const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
-
 const n2m = new NotionToMarkdown({ notionClient: notion });
 
 function getPostMetadata(page: PageObjectResponse): Post {
@@ -87,11 +85,26 @@ export const getPostBySlug = async (
     markdown: parent,
     post: getPostMetadata(response.results[0] as PageObjectResponse),
   };
-
-  // return getPageMetadata(response);
 };
 
-export const getPublishedPosts = async (tag?: string): Promise<Post[]> => {
+export interface GetPublishedPostsParams {
+  tag?: string;
+  sort?: string;
+  pageSize?: number;
+  startCursor?: string;
+}
+export interface GetPublishedPostsResponse {
+  posts: Post[];
+  hasMore: boolean;
+  nextCursor: string | null;
+}
+
+export const getPublishedPosts = async ({
+  tag = '전체',
+  sort = 'latest',
+  pageSize = 5,
+  startCursor,
+}: GetPublishedPostsParams = {}): Promise<GetPublishedPostsResponse> => {
   const response = await notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID!,
     filter: {
@@ -117,18 +130,28 @@ export const getPublishedPosts = async (tag?: string): Promise<Post[]> => {
     sorts: [
       {
         property: 'Date',
-        direction: 'descending',
+        direction: sort === 'latest' ? 'descending' : 'ascending',
       },
     ],
+    page_size: pageSize,
+    start_cursor: startCursor,
   });
 
-  return response.results
+  const posts = response.results
     .filter((page): page is PageObjectResponse => 'properties' in page)
     .map(getPostMetadata);
+
+  return {
+    posts,
+    hasMore: response.has_more,
+    nextCursor: response.next_cursor,
+  };
 };
 
 export const getTags = async (): Promise<TagFilterItem[]> => {
-  const posts = await getPublishedPosts();
+  const { posts } = await getPublishedPosts({ pageSize: 100 });
+
+  console.log(posts);
 
   // 모든 태그를 추출하고 각 태그의 출현 횟수를 계산
   const tagCount = posts.reduce(
@@ -141,21 +164,18 @@ export const getTags = async (): Promise<TagFilterItem[]> => {
     {} as Record<string, number>
   );
 
-  // TagFilterItem 형식으로 변환
   const tags: TagFilterItem[] = Object.entries(tagCount).map(([name, count]) => ({
     id: name,
     name,
     count,
   }));
 
-  // "전체" 태그 추가
   tags.unshift({
     id: 'all',
     name: '전체',
     count: posts.length,
   });
 
-  // 태그 이름 기준으로 정렬 ("전체" 태그는 항상 첫 번째에 위치하도록 제외)
   const [allTag, ...restTags] = tags;
   const sortedTags = restTags.sort((a, b) => a.name.localeCompare(b.name));
 

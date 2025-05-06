@@ -5,11 +5,10 @@ import { cn } from '@/lib/utils';
 
 interface TagSectionProps {
   tags: TagFilterItem[];
-  selectedTag?: string;
+  selectedTag: string;
 }
 
 export default function TagSection({ tags, selectedTag }: TagSectionProps) {
-  console.log('selectedTag:', selectedTag);
   return (
     <Card>
       <CardHeader>

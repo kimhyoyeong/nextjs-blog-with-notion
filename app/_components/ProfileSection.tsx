@@ -27,11 +27,11 @@ export default function ProfileSection() {
       <CardContent className="pt-6">
         <div className="space-y-4">
           <div className="flex justify-center">
-            <div className="bg-muted rounded-full">
+            <div className="bg-muted rounded-full p-2">
               <div className="h-36 w-36 overflow-hidden rounded-full">
                 <Image
                   src="/images/user.png"
-                  alt="짐코딩"
+                  alt="avatar"
                   width={144}
                   height={144}
                   className="object-cover"
@@ -41,8 +41,8 @@ export default function ProfileSection() {
           </div>
 
           <div className="text-center">
-            <h3 className="text-lg font-bold">짐코딩</h3>
-            <p className="text-primary text-sm">Full Stack Developer</p>
+            <h3 className="text-lg font-bold">ella</h3>
+            <p className="text-primary text-sm">웹퍼블리셔</p>
           </div>
 
           <div className="flex justify-center gap-2">
@@ -55,7 +55,7 @@ export default function ProfileSection() {
             ))}
           </div>
 
-          <p className="bg-primary/10 rounded p-2 text-center text-sm">코딩 교육 크리에이터 ✨</p>
+          <p className="bg-primary/10 rounded p-2 text-center text-sm">블로그</p>
         </div>
       </CardContent>
     </Card>

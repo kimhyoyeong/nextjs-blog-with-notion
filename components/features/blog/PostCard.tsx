@@ -2,18 +2,13 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
 import { Calendar, User } from 'lucide-react';
 import Image from 'next/image';
 import { Post } from '@/types/blog';
 import { formatDate } from '@/lib/date';
 
-import type { Post, TagFilterItem } from '@/types/blog';
-
 interface PostCardProps {
   post: Post;
-  tags?: TagFilterItem[];
 }
 
 export function PostCard({ post }: PostCardProps) {

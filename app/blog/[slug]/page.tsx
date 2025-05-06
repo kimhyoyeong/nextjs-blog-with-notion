@@ -7,11 +7,11 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { getPostBySlug } from '@/lib/notion';
 import { formatDate } from '@/lib/date';
 import { MDXRemote } from 'next-mdx-remote/rsc';
-import remarkGfm from 'remark-gfm';
-import rehypeSanitize from 'rehype-sanitize';
-import rehypePrettyCode from 'rehype-pretty-code';
-import rehypeSlug from 'rehype-slug';
-import { compile } from '@mdx-js/mdx';
+import remarkGfm from 'remark-gfm'; //마크다운 확장
+import rehypeSanitize from 'rehype-sanitize'; //XSS 공격 방지
+import rehypePrettyCode from 'rehype-pretty-code'; //코드 블록 스타일링
+import rehypeSlug from 'rehype-slug'; //id값 지정
+import { compile } from '@mdx-js/mdx'; //MDX 컴파일
 import withSlugs from 'rehype-slug';
 import withToc from '@stefanprobst/rehype-extract-toc';
 import withTocExport from '@stefanprobst/rehype-extract-toc/mdx';
@@ -99,7 +99,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
           <Separator className="my-8" />
 
           {/* 블로그 본문 */}
-          <div className="prose prose-neutral prose-sm dark:prose-invert prose-headings:scroll-mt-[var(--header-height)] max-w-none">
+          <div className="prose prose-neutral dark:prose-invert prose-headings:scroll-mt-[var(--header-height)] max-w-none">
             <MDXRemote
               source={markdown}
               options={{
@@ -145,7 +145,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
             </Link>
           </nav>
         </section>
-        <aside className="relative">
+        <aside className="relative hidden md:block">
           <div className="sticky top-[var(--sticky-top)]">
             <div className="bg-muted/60 space-y-4 rounded-lg p-6 backdrop-blur-sm">
               <h3 className="text-lg font-semibold">목차</h3>
