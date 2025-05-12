@@ -18,6 +18,9 @@ const nextConfig: NextConfig = {
       {
         hostname: 'prod-files-secure.s3.us-west-2.amazonaws.com',
       },
+      {
+        hostname: 'www.notion.so',
+      },
     ],
   },
   // 마크다운과 MDX 파일을 포함하도록 `pageExtensions` 구성.
