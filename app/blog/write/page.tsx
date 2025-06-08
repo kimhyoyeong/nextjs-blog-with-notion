@@ -2,12 +2,11 @@
 //서버 컴포넌트일 경우에는 페이지 내에 클라이언트 컴포넌트일경우 분리해야함
 
 import { PostForm } from '@/components/features/blog/PostForm';
-import { createPostAction } from '@/app/actions/blog';
 
 export default function WritePage() {
   return (
     <div className="container py-10">
-      <PostForm createPostAction={createPostAction} />
+      <PostForm />
     </div>
   );
 }
