@@ -26,15 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
           <div className="flex min-h-screen flex-col">
             {/* Header 영역 */}
             <Header />
             {/* Main 영역 */}
-            <main className="flex-1">{children}</main>
-
+            <main className="flex-1 px-6 md:px-8 lg:px-12">{children}</main>
             {/* Footer 영역 */}
             <Footer />
           </div>

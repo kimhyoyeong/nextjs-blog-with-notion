@@ -2,8 +2,8 @@
 
 import { createPost } from '@/lib/notion';
 import { z } from 'zod';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
+// import { revalidatePath } from 'next/cache';
+// import { redirect } from 'next/navigation';
 import { revalidateTag } from 'next/cache';
 
 const postSchema = z.object({
@@ -70,6 +70,6 @@ export async function createPostAction(prevState: PostFormState, formData: FormD
     };
   }
   // revalidatePath('/');
-  revalidateTag('posts');
-  redirect('/');
+  // revalidateTag('posts');
+  // redirect('/');
 }

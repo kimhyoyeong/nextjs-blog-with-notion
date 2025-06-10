@@ -5,11 +5,13 @@ import type {
   PersonUserObjectResponse,
 } from '@notionhq/client/build/src/api-endpoints';
 import { NotionToMarkdown } from 'notion-to-md';
+import { unstable_cache } from 'next/cache';
+
 export const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
+
 const n2m = new NotionToMarkdown({ notionClient: notion });
-import { unstable_cache } from 'next/cache';
 
 function getPostMetadata(page: PageObjectResponse): Post {
   const { properties } = page;
@@ -51,22 +53,12 @@ function getPostMetadata(page: PageObjectResponse): Post {
         : page.id,
   };
 }
-export interface GetPublishedPostsParams {
-  tag?: string;
-  sort?: string;
-  pageSize?: number;
-  startCursor?: string;
-}
-export interface GetPublishedPostsResponse {
-  posts: Post[];
-  hasMore: boolean;
-  nextCursor: string | null;
-}
+
 export const getPostBySlug = async (
   slug: string
 ): Promise<{
   markdown: string;
-  post: Post;
+  post: Post | null;
 }> => {
   const response = await notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID!,
@@ -88,6 +80,12 @@ export const getPostBySlug = async (
     },
   });
 
+  if (!response.results[0]) {
+    return {
+      markdown: '',
+      post: null,
+    };
+  }
   const mdBlocks = await n2m.pageToMarkdown(response.results[0].id);
   const { parent } = n2m.toMarkdownString(mdBlocks);
 
@@ -99,6 +97,18 @@ export const getPostBySlug = async (
   // return getPageMetadata(response);
 };
 
+export interface GetPublishedPostsParams {
+  tag?: string;
+  sort?: string;
+  pageSize?: number;
+  startCursor?: string;
+}
+export interface GetPublishedPostsResponse {
+  posts: Post[];
+  hasMore: boolean;
+  nextCursor: string | null;
+}
+
 export const getPublishedPosts = unstable_cache(
   async ({
     tag = '전체',
@@ -106,54 +116,71 @@ export const getPublishedPosts = unstable_cache(
     pageSize = 2,
     startCursor,
   }: GetPublishedPostsParams = {}): Promise<GetPublishedPostsResponse> => {
-    console.log('getPublishedPosts: ', tag, sort, pageSize, startCursor);
-    // 개발 환경에서만 5초 딜레이 추가
-    //await new Promise((resolve) => setTimeout(resolve, 5000));
-    const response = await notion.databases.query({
-      database_id: process.env.NOTION_DATABASE_ID!,
-      filter: {
-        and: [
-          {
-            property: 'Status',
-            select: {
-              equals: 'Published',
+    try {
+      const response = await notion.databases.query({
+        database_id: process.env.NOTION_DATABASE_ID!,
+        filter: {
+          and: [
+            {
+              property: 'Status',
+              select: {
+                equals: 'Published',
+              },
             },
-          },
-          ...(tag && tag !== '전체'
-            ? [
-                {
-                  property: 'Tags',
-                  multi_select: {
-                    contains: tag,
+            ...(tag && tag !== '전체'
+              ? [
+                  {
+                    property: 'Tags',
+                    multi_select: {
+                      contains: tag,
+                    },
                   },
-                },
-              ]
-            : []),
-        ],
-      },
-      sorts: [
-        {
-          property: 'Date',
-          direction: sort === 'latest' ? 'descending' : 'ascending',
+                ]
+              : []),
+          ],
         },
-      ],
-      start_cursor: startCursor,
-      page_size: pageSize,
-    });
+        sorts: [
+          {
+            property: 'Date',
+            direction: sort === 'latest' ? 'descending' : 'ascending',
+          },
+        ],
+        page_size: pageSize,
+        start_cursor: startCursor,
+      });
 
-    const posts = response.results
-      .filter((page): page is PageObjectResponse => 'properties' in page)
-      .map(getPostMetadata);
+      // 응답이 비어있는 경우 처리
+      if (!response.results || response.results.length === 0) {
+        return {
+          posts: [],
+          hasMore: false,
+          nextCursor: null,
+        };
+      }
 
-    return {
-      posts,
-      hasMore: response.has_more,
-      nextCursor: response.next_cursor,
-    };
+      const posts = response.results
+        .filter((page): page is PageObjectResponse => 'properties' in page)
+        .map(getPostMetadata);
+
+      return {
+        posts,
+        hasMore: response.has_more,
+        nextCursor: response.next_cursor,
+      };
+    } catch (error) {
+      console.error('Notion API 호출 중 오류 발생:', error);
+      // 에러 발생 시 빈 결과 반환
+      return {
+        posts: [],
+        hasMore: false,
+        nextCursor: null,
+      };
+    }
   },
-  ['posts'],
+  undefined,
   {
     tags: ['posts'],
+    // revalidate: 60, // 1분마다 캐시 갱신
   }
 );
 
