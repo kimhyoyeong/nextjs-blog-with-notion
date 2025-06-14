@@ -1,5 +1,11 @@
 import { Code2, Mail, Terminal, User } from 'lucide-react';
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'ella 블로그 소개',
+  description: 'ella 블로그 소개',
+};
 
 const menuItems = [
   { icon: User, label: 'Profile', href: '/about' },
